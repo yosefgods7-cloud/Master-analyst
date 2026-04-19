@@ -1,0 +1,99 @@
+import { GoogleGenAI } from "@google/genai";
+
+let ai: GoogleGenAI | null = null;
+
+export function getAI(): GoogleGenAI {
+  if (!ai) {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("GEMINI_API_KEY environment variable is required");
+    }
+    ai = new GoogleGenAI({ apiKey: key });
+  }
+  return ai;
+}
+
+const COMMON_CONFIG = {
+  model: "gemini-3.1-pro-preview",
+  tools: [{ googleSearch: {} }],
+};
+
+async function executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 3, baseDelay = 1000): Promise<T> {
+  let attempt = 0;
+  while (attempt < maxRetries) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      attempt++;
+      if (attempt >= maxRetries) {
+        throw error;
+      }
+      const waitTime = baseDelay * Math.pow(2, attempt - 1);
+      console.warn(`Gemini API call failed. Retrying in ${waitTime}ms... (Attempt ${attempt} of ${maxRetries})`, error?.message);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+  throw new Error("Execute with retry failed");
+}
+
+export async function generate7AMBriefing() {
+  const prompt = `
+  You are an expert financial market analyst. Provide a small, concise briefing on the market update and status for Gold (XAUUSD) and the US Dollar Index (DXY).
+  Focus ONLY on what happened within the LAST 24 HOURS.
+  Requirements:
+  - IMPORTANT: You MUST use the Google Search tool to fetch the absolute latest, current LIVE real-time prices for Gold (XAUUSD) and the US Dollar Index (DXY) right now, and include these live prices in the briefing. Base your analysis on this fresh live data.
+  - Structured and easy to navigate.
+  - Eye-catching with appropriate emojis.
+  - Formatted beautifully for Telegram using pure text and emojis. DO NOT use Markdown asterisks or underscores.
+  - Include current status/price levels broadly and major overnight moves.
+  `;
+  const response = await executeWithRetry(() => getAI().models.generateContent({
+    ...COMMON_CONFIG,
+    contents: prompt,
+  }));
+  return response.text;
+}
+
+export async function generate730AMCalendar() {
+  const prompt = `
+  You are an expert financial market analyst. Compile the latest daily economic calendar specifically covering DXY, EURUSD, GBPUSD, and USDJPY.
+  You MUST source today's high-impact and medium-impact news list as they would appear on Forex Factory.
+  Requirements:
+  - IMPORTANT: You MUST use the Google Search tool to fetch the LIVE, real-time up-to-date economic calendar data for today. Do not guess; find the actual releases scheduled for today.
+  - Display the time of release, currency affected, and the event name.
+  - Highlight the anticipated impact (e.g., High 🔴, Medium 🟠).
+  - Structured, easy to navigate, and eye-catching with emojis.
+  - Formatted beautifully for Telegram.
+  `;
+  const response = await executeWithRetry(() => getAI().models.generateContent({
+    ...COMMON_CONFIG,
+    contents: prompt,
+  }));
+  return response.text;
+}
+
+export async function generate8AMDeepOverview() {
+  const prompt = `
+  You are an expert financial market analyst. Provide a VERY DEEP OVERVIEW of the latest market updates covering major articles, news, and updates.
+  You MUST provide a deep sentiment and fundamental view on what can affect Gold (XAUUSD) today.
+  Cover macroeconomic factors heavily: wars, geopolitical tension, rate cuts, NFP, CPI, or other major US news releases.
+  
+  Requirements:
+  - IMPORTANT: You MUST use the Google Search tool to fetch the absolute latest news articles, macroeconomic updates, and LIVE Gold/DXY real-time prices from the last few hours to power your deep analysis.
+  - NEW REQUIREMENT (Sentiment Analysis): Process current news headlines and article content related to gold and DXY. Classify the overall sentiment as positive, negative, or neutral, and provide a quantifiable measure (e.g., 75% Bullish, 25% Bearish based on 10 recent headlines).
+  - NEW REQUIREMENT (Historical Context): Analyze historical price data for gold and DXY over the past month. Identify significant price swings and correlate them with major economic news releases or geopolitical events from that period. Present these findings to offer a comparative perspective mapping past month context to today.
+  
+  - Output should be structured into 4 distinct sections (or separate messages conceptually).
+  - Section 1: Macro & Geopolitical Overview (Wars, broad economic shifts).
+  - Section 2: US Data & Monetary Policy (Rate cuts, CPI, NFP, FED speak).
+  - Section 3: Deep Gold (XAUUSD) Strategy & Sentiment (Include the Quantitative Sentiment Analysis module here).
+  - Section 4: Historical Context (Past month price swings and correlations).
+  - Must be highly detailed, structured, easy to navigate, and eye-catching with emojis.
+  - Formatted beautifully for Telegram.
+  `;
+  const response = await executeWithRetry(() => getAI().models.generateContent({
+    ...COMMON_CONFIG,
+    contents: prompt,
+  }));
+  return response.text;
+}
