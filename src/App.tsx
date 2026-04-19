@@ -5,7 +5,7 @@ import { cn } from "./lib/utils";
 import { Badge } from "./components/ui/Badge";
 import { Button } from "./components/ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./components/ui/Card";
-import { generate730AMCalendar, generate7AMBriefing, generate8AMDeepOverview } from "./services/geminiService";
+import { generate730AMCalendar, generate7AMBriefing, generate8AMDeepOverview, generateWeeklyGoldAnalysis, generateWeeklyDXYAnalysis } from "./services/geminiService";
 import { sendToTelegram } from "./services/telegramService";
 
 function App() {
@@ -23,6 +23,14 @@ function App() {
   const [overviewText, setOverviewText] = useState("");
   const [overviewLoading, setOverviewLoading] = useState(false);
 
+  // State for Weekly Gold 9AM
+  const [weeklyGoldText, setWeeklyGoldText] = useState("");
+  const [weeklyGoldLoading, setWeeklyGoldLoading] = useState(false);
+
+  // State for Weekly DXY 9AM
+  const [weeklyDXYText, setWeeklyDXYText] = useState("");
+  const [weeklyDXYLoading, setWeeklyDXYLoading] = useState(false);
+  
   const [autoRunEnabled, setAutoRunEnabled] = useState(false);
 
   const [chatIdInput, setChatIdInput] = useState(() => localStorage.getItem("TELEGRAM_CHAT_ID") || "");
@@ -45,8 +53,10 @@ function App() {
     // 7 AM UTC+3 = 4 AM UTC
     // 7:30 AM UTC+3 = 4:30 AM UTC
     // 8 AM UTC+3 = 5 AM UTC
+    // 9 AM UTC+3 = 6 AM UTC
     
     const now = new Date();
+    const utcDay = now.getUTCDay();
     const utcHour = now.getUTCHours();
     const utcMinute = now.getUTCMinutes();
     const utcSecond = now.getUTCSeconds();
@@ -76,6 +86,22 @@ function App() {
             return sendToTelegram(text, chatIdInput, botTokenInput);
           }
         }).catch(err => console.error("Auto-run Overview failed", err));
+      }
+      // Weekly Sunday Morning Insights
+      if (utcDay === 0 && utcHour === 6 && utcMinute === 0) {
+        generateWeeklyGoldAnalysis(geminiKeyInput).then(text => {
+          if (text) {
+            setWeeklyGoldText(text);
+            return sendToTelegram(text, chatIdInput, botTokenInput);
+          }
+        }).catch(err => console.error("Auto-run Weekly Gold failed", err));
+        
+        generateWeeklyDXYAnalysis(geminiKeyInput).then(text => {
+          if (text) {
+            setWeeklyDXYText(text);
+            return sendToTelegram(text, chatIdInput, botTokenInput);
+          }
+        }).catch(err => console.error("Auto-run Weekly DXY failed", err));
       }
     }
   }, [time, autoRunEnabled, chatIdInput, botTokenInput, geminiKeyInput]);
@@ -116,6 +142,32 @@ function App() {
       alert("Failed to generate overview.");
     } finally {
       setOverviewLoading(false);
+    }
+  };
+
+  const handleGenerateWeeklyGold = async () => {
+    setWeeklyGoldLoading(true);
+    try {
+      const text = await generateWeeklyGoldAnalysis(geminiKeyInput);
+      setWeeklyGoldText(text || "");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to generate weekly gold.");
+    } finally {
+      setWeeklyGoldLoading(false);
+    }
+  };
+
+  const handleGenerateWeeklyDXY = async () => {
+    setWeeklyDXYLoading(true);
+    try {
+      const text = await generateWeeklyDXYAnalysis(geminiKeyInput);
+      setWeeklyDXYText(text || "");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to generate weekly DXY.");
+    } finally {
+      setWeeklyDXYLoading(false);
     }
   };
 
@@ -333,6 +385,83 @@ function App() {
             </CardFooter>
           </Card>
 
+        </div>
+
+        <header className="mb-4 mt-8 lg:mt-16 flex flex-col sm:flex-row sm:items-end justify-between border-b border-[#27272A] pb-4">
+          <div>
+            <p className="text-[0.7rem] uppercase tracking-[0.2em] text-[#EAB308] font-bold">Weekly Analysis Cycle</p>
+            <h1 className="text-3xl md:text-4xl font-black leading-none tracking-[-2px] mt-1">Sun <span className="font-mono text-[#A1A1AA]">09:00</span></h1>
+          </div>
+        </header>
+        
+        <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+            {/* Card 4 Weekly Gold */}
+            <Card>
+              <div className="absolute -top-1 right-2 font-mono text-5xl font-extrabold text-[#EAB308]/5">XAU</div>
+              <CardHeader>
+                <CardTitle>Weekly Gold</CardTitle>
+                <p className="text-[0.8rem] text-[#A1A1AA]">Deep Review & Forward Insight</p>
+              </CardHeader>
+              <CardContent>
+                <textarea
+                  value={weeklyGoldText}
+                  onChange={(e) => setWeeklyGoldText(e.target.value)}
+                  placeholder="Weekly gold analysis will appear here..."
+                  className="h-full min-h-[250px] w-full resize-none rounded bg-[#0F0F10] border border-[#1A1A1C] p-4 text-[0.85rem] leading-snug text-white focus:border-[#EAB308] focus:outline-none"
+                />
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  onClick={handleGenerateWeeklyGold} 
+                  disabled={weeklyGoldLoading}
+                  className="w-full sm:w-auto"
+                >
+                  {weeklyGoldLoading ? "Generating..." : "Generate Insights"}
+                </Button>
+                <Button 
+                  onClick={() => handleSendToTelegram(weeklyGoldText)}
+                  disabled={!weeklyGoldText}
+                  variant="outline"
+                  className="w-full sm:w-auto text-[#EAB308]"
+                >
+                  Dispatch
+                </Button>
+              </CardFooter>
+            </Card>
+
+            {/* Card 5 Weekly DXY */}
+            <Card>
+                <div className="absolute -top-1 right-2 font-mono text-5xl font-extrabold text-blue-500/5">DXY</div>
+                <CardHeader>
+                  <CardTitle>Weekly DXY</CardTitle>
+                  <p className="text-[0.8rem] text-[#A1A1AA]">Deep Review & Forward Insight</p>
+                </CardHeader>
+                <CardContent>
+                  <textarea
+                    value={weeklyDXYText}
+                    onChange={(e) => setWeeklyDXYText(e.target.value)}
+                    placeholder="Weekly DXY analysis will appear here..."
+                    className="h-full min-h-[250px] w-full resize-none rounded bg-[#0F0F10] border border-[#1A1A1C] p-4 text-[0.85rem] leading-snug text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    onClick={handleGenerateWeeklyDXY} 
+                    disabled={weeklyDXYLoading}
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {weeklyDXYLoading ? "Generating..." : "Generate Insights"}
+                  </Button>
+                  <Button 
+                    onClick={() => handleSendToTelegram(weeklyDXYText)}
+                    disabled={!weeklyDXYText}
+                    variant="outline"
+                    className="w-full sm:w-auto text-blue-500 border-blue-500 hover:bg-blue-500/10"
+                  >
+                    Dispatch
+                  </Button>
+                </CardFooter>
+            </Card>
         </div>
 
         <footer className="mt-8 flex flex-col sm:flex-row justify-between border-t border-dotted border-[#27272A] pt-4 text-[0.7rem] uppercase tracking-widest text-[#A1A1AA] gap-2">

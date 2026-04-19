@@ -99,3 +99,41 @@ export async function generate8AMDeepOverview(apiKeyOverride?: string) {
   }));
   return response.text;
 }
+
+export async function generateWeeklyGoldAnalysis(apiKeyOverride?: string) {
+  const prompt = `
+  You are an expert financial market analyst. Provide a VERY DEEP WEEKLY INSIGHT on what happened within the past week in the Gold (XAUUSD) market.
+  
+  Requirements:
+  - IMPORTANT: You MUST use the Google Search tool to fetch the absolute latest weekly recap news, articles, economic data, and real-time closing prices for Gold for this past week.
+  - Provide a detailed overview of the week's overall events affecting Gold.
+  - Structure the data to show each major event or move in a diverse way (e.g., categorical breakdown, bulleted lists, numeric data points).
+  - Provide an insight for the UPCOMING NEXT WEEK based on what happened, stating clearly if you expect Gold to have an UP or DOWN bias overall next week.
+  - Must be highly detailed, structured, easy to navigate, and eye-catching with emojis.
+  - Formatted beautifully for Telegram.
+  `;
+  const response = await executeWithRetry(() => getAI(apiKeyOverride).models.generateContent({
+    ...COMMON_CONFIG,
+    contents: prompt,
+  }));
+  return response.text;
+}
+
+export async function generateWeeklyDXYAnalysis(apiKeyOverride?: string) {
+  const prompt = `
+  You are an expert financial market analyst. Provide a VERY DEEP WEEKLY INSIGHT on what happened within the past week in the US Dollar Index (DXY) market.
+  
+  Requirements:
+  - IMPORTANT: You MUST use the Google Search tool to fetch the absolute latest weekly recap news, articles, macroeconomic prints, and real-time closing prices for DXY for this past week.
+  - Provide a detailed overview of the week's events affecting the US Dollar (e.g., FED speakers, major data releases like NFP/CPI, yield curve changes).
+  - Structure the data to show each major event or move in a diverse way (e.g., categorical breakdown, bulleted lists, numeric data points).
+  - Provide an insight for the UPCOMING NEXT WEEK based on what happened, stating clearly if you expect DXY to have an UP or DOWN bias overall next week.
+  - Must be highly detailed, structured, easy to navigate, and eye-catching with emojis.
+  - Formatted beautifully for Telegram.
+  `;
+  const response = await executeWithRetry(() => getAI(apiKeyOverride).models.generateContent({
+    ...COMMON_CONFIG,
+    contents: prompt,
+  }));
+  return response.text;
+}
