@@ -28,11 +28,11 @@ async function startServer() {
       });
       const data = await resp.json();
       if (!data.ok) {
-        throw new Error(data.description || "Failed to send to Telegram");
+        return res.status(400).json({ error: data.description || "Failed to send to Telegram", errorCode: data.error_code, details: data });
       }
       res.json({ success: true });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message, type: "network_or_internal" });
     }
   });
 
