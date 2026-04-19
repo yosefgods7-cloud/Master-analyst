@@ -27,6 +27,9 @@ function App() {
 
   const [chatIdInput, setChatIdInput] = useState(() => localStorage.getItem("TELEGRAM_CHAT_ID") || "");
 
+  const [botTokenInput, setBotTokenInput] = useState(() => localStorage.getItem("TELEGRAM_BOT_TOKEN_OVERRIDE") || "");
+  const [geminiKeyInput, setGeminiKeyInput] = useState(() => localStorage.getItem("GEMINI_API_KEY_OVERRIDE") || "");
+
   // Update real-time clock
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -51,36 +54,36 @@ function App() {
     // Trigger only on the 0th second of the minute to prevent duplicates
     if (utcSecond === 0) {
       if (utcHour === 4 && utcMinute === 0) {
-        generate7AMBriefing().then(text => {
+        generate7AMBriefing(geminiKeyInput).then(text => {
           if (text) {
             setBriefingText(text);
-            return sendToTelegram(text, chatIdInput);
+            return sendToTelegram(text, chatIdInput, botTokenInput);
           }
         }).catch(err => console.error("Auto-run Briefing failed", err));
       }
       if (utcHour === 4 && utcMinute === 30) {
-        generate730AMCalendar().then(text => {
+        generate730AMCalendar(geminiKeyInput).then(text => {
           if (text) {
             setCalendarText(text);
-            return sendToTelegram(text, chatIdInput);
+            return sendToTelegram(text, chatIdInput, botTokenInput);
           }
         }).catch(err => console.error("Auto-run Calendar failed", err));
       }
       if (utcHour === 5 && utcMinute === 0) {
-        generate8AMDeepOverview().then(text => {
+        generate8AMDeepOverview(geminiKeyInput).then(text => {
           if (text) {
             setOverviewText(text);
-            return sendToTelegram(text, chatIdInput);
+            return sendToTelegram(text, chatIdInput, botTokenInput);
           }
         }).catch(err => console.error("Auto-run Overview failed", err));
       }
     }
-  }, [time, autoRunEnabled, chatIdInput]);
+  }, [time, autoRunEnabled, chatIdInput, botTokenInput, geminiKeyInput]);
 
   const handleGenerateBriefing = async () => {
     setBriefingLoading(true);
     try {
-      const text = await generate7AMBriefing();
+      const text = await generate7AMBriefing(geminiKeyInput);
       setBriefingText(text || "");
     } catch (err) {
       console.error(err);
@@ -93,7 +96,7 @@ function App() {
   const handleGenerateCalendar = async () => {
     setCalendarLoading(true);
     try {
-      const text = await generate730AMCalendar();
+      const text = await generate730AMCalendar(geminiKeyInput);
       setCalendarText(text || "");
     } catch (err) {
       console.error(err);
@@ -106,7 +109,7 @@ function App() {
   const handleGenerateOverview = async () => {
     setOverviewLoading(true);
     try {
-      const text = await generate8AMDeepOverview();
+      const text = await generate8AMDeepOverview(geminiKeyInput);
       setOverviewText(text || "");
     } catch (err) {
       console.error(err);
@@ -119,7 +122,7 @@ function App() {
   const handleSendToTelegram = async (text: string) => {
     if (!text) return;
     try {
-      await sendToTelegram(text, chatIdInput);
+      await sendToTelegram(text, chatIdInput, botTokenInput);
       alert("Successfully sent to Telegram!");
     } catch (err: any) {
       console.error(err);
@@ -149,7 +152,33 @@ function App() {
                 setChatIdInput(e.target.value);
                 localStorage.setItem("TELEGRAM_CHAT_ID", e.target.value);
               }}
-              placeholder="-100... (optional override)"
+              placeholder="-100... (optional)"
+              className="rounded border border-[#27272A] bg-[#111] p-2 text-xs font-mono text-white focus:outline-none focus:border-[#EAB308]"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-[0.7rem] font-semibold uppercase tracking-widest text-[#A1A1AA]">Telegram Bot Token</span>
+            <input
+              type="password"
+              value={botTokenInput}
+              onChange={(e) => {
+                setBotTokenInput(e.target.value);
+                localStorage.setItem("TELEGRAM_BOT_TOKEN_OVERRIDE", e.target.value);
+              }}
+              placeholder="1234:ABC... (for static hosting)"
+              className="rounded border border-[#27272A] bg-[#111] p-2 text-xs font-mono text-white focus:outline-none focus:border-[#EAB308]"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-[0.7rem] font-semibold uppercase tracking-widest text-[#A1A1AA]">Gemini API Key</span>
+            <input
+              type="password"
+              value={geminiKeyInput}
+              onChange={(e) => {
+                setGeminiKeyInput(e.target.value);
+                localStorage.setItem("GEMINI_API_KEY_OVERRIDE", e.target.value);
+              }}
+              placeholder="AIzaSy... (for static hosting)"
               className="rounded border border-[#27272A] bg-[#111] p-2 text-xs font-mono text-white focus:outline-none focus:border-[#EAB308]"
             />
           </div>

@@ -2,12 +2,14 @@ import { GoogleGenAI } from "@google/genai";
 
 let ai: GoogleGenAI | null = null;
 
-export function getAI(): GoogleGenAI {
-  if (!ai) {
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      throw new Error("GEMINI_API_KEY environment variable is required");
-    }
+export function getAI(overrideKey?: string): GoogleGenAI {
+  const key = overrideKey || process.env.GEMINI_API_KEY;
+  if (!key) {
+    throw new Error("GEMINI_API_KEY environment variable or override is required");
+  }
+  
+  // Re-initialize if the key changed (e.g., user updated the input)
+  if (!ai || (ai as any).apiKey !== key) {
     ai = new GoogleGenAI({ apiKey: key });
   }
   return ai;
@@ -36,7 +38,7 @@ async function executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 3, 
   throw new Error("Execute with retry failed");
 }
 
-export async function generate7AMBriefing() {
+export async function generate7AMBriefing(apiKeyOverride?: string) {
   const prompt = `
   You are an expert financial market analyst. Provide a small, concise briefing on the market update and status for Gold (XAUUSD) and the US Dollar Index (DXY).
   Focus ONLY on what happened within the LAST 24 HOURS.
@@ -47,14 +49,14 @@ export async function generate7AMBriefing() {
   - Formatted beautifully for Telegram using pure text and emojis. DO NOT use Markdown asterisks or underscores.
   - Include current status/price levels broadly and major overnight moves.
   `;
-  const response = await executeWithRetry(() => getAI().models.generateContent({
+  const response = await executeWithRetry(() => getAI(apiKeyOverride).models.generateContent({
     ...COMMON_CONFIG,
     contents: prompt,
   }));
   return response.text;
 }
 
-export async function generate730AMCalendar() {
+export async function generate730AMCalendar(apiKeyOverride?: string) {
   const prompt = `
   You are an expert financial market analyst. Compile the latest daily economic calendar specifically covering DXY, EURUSD, GBPUSD, and USDJPY.
   You MUST source today's high-impact and medium-impact news list as they would appear on Forex Factory.
@@ -65,14 +67,14 @@ export async function generate730AMCalendar() {
   - Structured, easy to navigate, and eye-catching with emojis.
   - Formatted beautifully for Telegram.
   `;
-  const response = await executeWithRetry(() => getAI().models.generateContent({
+  const response = await executeWithRetry(() => getAI(apiKeyOverride).models.generateContent({
     ...COMMON_CONFIG,
     contents: prompt,
   }));
   return response.text;
 }
 
-export async function generate8AMDeepOverview() {
+export async function generate8AMDeepOverview(apiKeyOverride?: string) {
   const prompt = `
   You are an expert financial market analyst. Provide a VERY DEEP OVERVIEW of the latest market updates covering major articles, news, and updates.
   You MUST provide a deep sentiment and fundamental view on what can affect Gold (XAUUSD) today.
@@ -91,7 +93,7 @@ export async function generate8AMDeepOverview() {
   - Must be highly detailed, structured, easy to navigate, and eye-catching with emojis.
   - Formatted beautifully for Telegram.
   `;
-  const response = await executeWithRetry(() => getAI().models.generateContent({
+  const response = await executeWithRetry(() => getAI(apiKeyOverride).models.generateContent({
     ...COMMON_CONFIG,
     contents: prompt,
   }));

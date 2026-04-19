@@ -27,9 +27,27 @@ async function executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 3, 
   throw new Error("Execute with retry failed");
 }
 
-export async function sendToTelegram(message: string, chatId?: string) {
+export async function sendToTelegram(message: string, chatId?: string, botToken?: string) {
   return executeWithRetry(async () => {
     try {
+      const tokenToUse = botToken || process.env.TELEGRAM_BOT_TOKEN;
+      const isStaticHost = window.location.hostname.includes("github.io");
+
+      // Use direct client-side Telegram API call if we are naturally on GitHub Pages or if explicitly provided
+      if (tokenToUse && (isStaticHost || !window.location.hostname.includes("localhost"))) {
+        const directResp = await fetch(`https://api.telegram.org/bot${tokenToUse}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: chatId, text: message })
+        });
+        const directData = await directResp.json();
+        if (!directData.ok) {
+           throw new Error(`Telegram API Error: ${directData.description}`);
+        }
+        return directData;
+      }
+
+      // Default to backend Express proxy
       const response = await fetch("/api/telegram", {
         method: "POST",
         headers: {
