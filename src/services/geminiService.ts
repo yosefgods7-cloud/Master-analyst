@@ -142,29 +142,34 @@ export async function generateGeopoliticalOSINTAnalysis(apiKeyOverride?: string)
   const prompt = `
   DAILY GEOPOLITICAL SMART-MONEY POSITIONING BRIEFING
 
-  You are an elite macro + OSINT trading analyst. Every day I send this prompt you must run a complete fresh deep dive using all your real-time tools (Google Search for web_search, news, prediction-market scraping, CFTC COT, OSINT news summaries, etc.).
+  You are an elite macro + OSINT trading analyst. Every day I send this prompt you must run a complete fresh deep dive using all your real-time tools.
   Skip general macroeconomic analysis (NFP, CPI, Fed Rates) as other sections already cover that. Focus strictly and heavily on tension, military and probability metrics. 
+
+  CRITICAL DATA FETCHING REQUIREMENTS:
+  - You MUST use the Google Search tool explicitly to find "real-time odds Polymarket geopolitical events escalations" to integrate LIVE probabilities for your predictive analysis.
+  - You MUST use the Google Search tool explicitly (e.g. "site:x.com OR site:twitter.com trending geopolitical gold market sentiment") to search for trending topics on Twitter/X related to geopolitical events and market sentiment.
+  - You MUST use the Google Search tool explicitly for "latest CFTC Commitment of Traders (COT) report Gold Crude Oil" to fetch and analyze net positions of Managed Money and Large Specs.
 
   Focus areas (always cover ALL of them in order):
 
   1. Current Hot Geopolitical Risk Zones
   List the top 2–3 escalating situations right now (Iran/Israel/US, Russia/Ukraine, China/Taiwan, Middle-East flashpoints, or any new surprise). For each one give:
-  Probability of major event in next 7–14 days (use Polymarket odds + your synthesis).
+  Probability of major event in next 7–14 days (displaying probabilities directly within the analysis section sourced directly from Polymarket odds + your synthesis).
   Key triggers already visible in open sources.
 
   2. Prediction Market Snapshot (Polymarket + others)
-  Pull latest odds and volume on any “strike / war / escalation” contracts for the above zones. Highlight if smart money is heavily betting one direction in the last 24–48 h.
+  Use your Polymarket odds search to pull latest probabilities/volume on any “strike / war / escalation” contracts for the above zones. Highlight if smart money is heavily betting one direction in the last 24–48 h.
 
-  3. Open-Source Military Buildup (OSINT)
+  3. Open-Source Military Buildup & Social Sentiment (OSINT & X/Twitter)
   Check and summarize recently reported:
   Flightradar24 / ADS-B: unusual US/Israeli/Chinese/Russian military flights or tanker activity toward the region.
-  MarineTraffic: carrier strike groups, amphibious ships, or oil-tanker anomalies near Strait of Hormuz or key chokepoints.
-  Public satellite / OSINT accounts on X/Twitter showing base activity or ship movements.
+  MarineTraffic: carrier strike groups, amphibious ships...
+  Trending topics on X/Twitter: Summarize the current geopolitical and market sentiment based on your Twitter search.
   Flag any clear “positioning before event” signals.
 
   4. Institutional Positioning in Gold & Related Assets
-  Latest CFTC Commitment of Traders (COT) for Gold, Silver, Crude Oil (or most recent release + any daily futures data).
-  Net longs by Managed Money / Large Specs in the last 1–2 reports.
+  Using your CFTC search, present the latest CFTC Commitment of Traders (COT) for Gold and Crude Oil.
+  Explicitly display net positions of Managed Money and Large Specs.
   Spot volume spikes or unusual options flow on XAUUSD, USOIL in last 24 h.
 
   5. News & Narrative Buildup (Buy-the-Rumor Setup)
