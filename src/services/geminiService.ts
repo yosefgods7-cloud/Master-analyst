@@ -137,3 +137,58 @@ export async function generateWeeklyDXYAnalysis(apiKeyOverride?: string) {
   }));
   return response.text;
 }
+
+export async function generateGeopoliticalOSINTAnalysis(apiKeyOverride?: string) {
+  const prompt = `
+  DAILY GEOPOLITICAL SMART-MONEY POSITIONING BRIEFING
+
+  You are an elite macro + OSINT trading analyst. Every day I send this prompt you must run a complete fresh deep dive using all your real-time tools (Google Search for web_search, news, prediction-market scraping, CFTC COT, OSINT news summaries, etc.).
+  Skip general macroeconomic analysis (NFP, CPI, Fed Rates) as other sections already cover that. Focus strictly and heavily on tension, military and probability metrics. 
+
+  Focus areas (always cover ALL of them in order):
+
+  1. Current Hot Geopolitical Risk Zones
+  List the top 2–3 escalating situations right now (Iran/Israel/US, Russia/Ukraine, China/Taiwan, Middle-East flashpoints, or any new surprise). For each one give:
+  Probability of major event in next 7–14 days (use Polymarket odds + your synthesis).
+  Key triggers already visible in open sources.
+
+  2. Prediction Market Snapshot (Polymarket + others)
+  Pull latest odds and volume on any “strike / war / escalation” contracts for the above zones. Highlight if smart money is heavily betting one direction in the last 24–48 h.
+
+  3. Open-Source Military Buildup (OSINT)
+  Check and summarize recently reported:
+  Flightradar24 / ADS-B: unusual US/Israeli/Chinese/Russian military flights or tanker activity toward the region.
+  MarineTraffic: carrier strike groups, amphibious ships, or oil-tanker anomalies near Strait of Hormuz or key chokepoints.
+  Public satellite / OSINT accounts on X/Twitter showing base activity or ship movements.
+  Flag any clear “positioning before event” signals.
+
+  4. Institutional Positioning in Gold & Related Assets
+  Latest CFTC Commitment of Traders (COT) for Gold, Silver, Crude Oil (or most recent release + any daily futures data).
+  Net longs by Managed Money / Large Specs in the last 1–2 reports.
+  Spot volume spikes or unusual options flow on XAUUSD, USOIL in last 24 h.
+
+  5. News & Narrative Buildup (Buy-the-Rumor Setup)
+  Summarize the last 24–48 h headlines from Reuters, AP, Al Jazeera, White House/Iranian statements that show escalation or de-escalation. Highlight any “leaks” or rhetoric that big players would use to front-run.
+
+  6. XAUUSD & Correlated Pairs Trade Setup
+  For each hot zone:
+  Current XAUUSD price + key levels.
+  Expected reaction if event happens (historical “sell the news” magnitude).
+  Precise entry plan for “position before event” (long gold on dips during buildup, or short if de-escalation signals dominate).
+  Stop-loss and take-profit logic once the event is confirmed.
+  Secondary pairs to watch (USOIL, BTC, equities) and why.
+
+  7. Risk & Probability Summary
+  One-sentence verdict: “High-confidence pre-event long gold setup” or “Too late / de-escalation risk dominant – stay flat”.
+  Overall probability the pattern you described repeats in next 7 days.
+
+  Use tables or bullet points for clarity. Always cite sources inline where possible. End with a short “Actionable Checklist for Today” (3–5 bullet points I can act on immediately).
+  Be ruthless with data freshness — ignore anything older than 24 h unless it’s still the dominant narrative. If no major setup exists today, say it clearly instead of forcing one.
+  Make it beautifully formatted for Telegram with appropriate emojis.
+  `;
+  const response = await executeWithRetry(() => getAI(apiKeyOverride).models.generateContent({
+    ...COMMON_CONFIG,
+    contents: prompt,
+  }));
+  return response.text;
+}

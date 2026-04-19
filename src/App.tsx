@@ -5,7 +5,7 @@ import { cn } from "./lib/utils";
 import { Badge } from "./components/ui/Badge";
 import { Button } from "./components/ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./components/ui/Card";
-import { generate730AMCalendar, generate7AMBriefing, generate8AMDeepOverview, generateWeeklyGoldAnalysis, generateWeeklyDXYAnalysis } from "./services/geminiService";
+import { generate730AMCalendar, generate7AMBriefing, generate8AMDeepOverview, generateWeeklyGoldAnalysis, generateWeeklyDXYAnalysis, generateGeopoliticalOSINTAnalysis } from "./services/geminiService";
 import { sendToTelegram } from "./services/telegramService";
 
 function App() {
@@ -22,6 +22,10 @@ function App() {
   // State for 8 AM
   const [overviewText, setOverviewText] = useState("");
   const [overviewLoading, setOverviewLoading] = useState(false);
+
+  // State for 8:30 AM Geo
+  const [geoText, setGeoText] = useState("");
+  const [geoLoading, setGeoLoading] = useState(false);
 
   // State for Weekly Gold 9AM
   const [weeklyGoldText, setWeeklyGoldText] = useState("");
@@ -86,6 +90,14 @@ function App() {
             return sendToTelegram(text, chatIdInput, botTokenInput);
           }
         }).catch(err => console.error("Auto-run Overview failed", err));
+      }
+      if (utcHour === 5 && utcMinute === 30) {
+        generateGeopoliticalOSINTAnalysis(geminiKeyInput).then(text => {
+          if (text) {
+            setGeoText(text);
+            return sendToTelegram(text, chatIdInput, botTokenInput);
+          }
+        }).catch(err => console.error("Auto-run Geo failed", err));
       }
       // Weekly Sunday Morning Insights
       if (utcDay === 0 && utcHour === 6 && utcMinute === 0) {
@@ -168,6 +180,19 @@ function App() {
       alert("Failed to generate weekly DXY.");
     } finally {
       setWeeklyDXYLoading(false);
+    }
+  };
+
+  const handleGenerateGeo = async () => {
+    setGeoLoading(true);
+    try {
+      const text = await generateGeopoliticalOSINTAnalysis(geminiKeyInput);
+      setGeoText(text || "");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to generate geopolitical analysis.");
+    } finally {
+      setGeoLoading(false);
     }
   };
 
@@ -271,7 +296,7 @@ function App() {
         <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between border-b border-[#27272A] pb-4">
           <div>
             <p className="text-[0.7rem] uppercase tracking-[0.2em] text-[#EAB308] font-bold">Daily Analysis Cycle</p>
-            <h1 className="text-4xl md:text-5xl font-black leading-none tracking-[-2px] mt-1">07:00 - 08:00</h1>
+            <h1 className="text-4xl md:text-5xl font-black leading-none tracking-[-2px] mt-1">07:00 - 08:30</h1>
           </div>
           <div className="text-left sm:text-right mt-4 sm:mt-0">
             <p className="text-[0.7rem] uppercase tracking-[0.1em] text-[#A1A1AA] font-bold">Current Time (UTC+3)</p>
@@ -281,7 +306,7 @@ function App() {
           </div>
         </header>
 
-        <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-4">
           
           {/* Card 1 */}
           <Card>
@@ -381,6 +406,40 @@ function App() {
                 className="w-full sm:w-auto text-[#EAB308]"
               >
                 Dispatch
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* Card 4 (Geopolitics & OSINT) */}
+          <Card className="border-red-500/20">
+            <div className="absolute -top-1 right-2 font-mono text-5xl font-extrabold text-red-500/5">08:30</div>
+            <CardHeader>
+              <CardTitle>Round 4</CardTitle>
+              <p className="text-[0.8rem] text-red-400">Geopolitics & OSINT Polymarket</p>
+            </CardHeader>
+            <CardContent>
+              <textarea
+                value={geoText}
+                onChange={(e) => setGeoText(e.target.value)}
+                placeholder="Geopolitical & Polymarket insights will appear here..."
+                className="h-full min-h-[250px] w-full resize-none rounded bg-[#0F0F10] border border-[#1A1A1C] p-4 text-[0.85rem] leading-snug text-white focus:border-red-500 focus:outline-none"
+              />
+            </CardContent>
+            <CardFooter>
+              <Button 
+                onClick={handleGenerateGeo} 
+                disabled={geoLoading}
+                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white"
+              >
+                {geoLoading ? "Generating..." : "Generate GEO"}
+              </Button>
+              <Button 
+                onClick={() => handleSendToTelegram(geoText)}
+                disabled={!geoText}
+                variant="outline"
+                className="w-full sm:w-auto text-red-500 border-red-500 hover:bg-red-500/10"
+              >
+                Dispatch GEO
               </Button>
             </CardFooter>
           </Card>
