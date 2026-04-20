@@ -91,7 +91,9 @@ function App() {
           }
         }).catch(err => console.error("Auto-run Overview failed", err));
       }
-      if (utcHour === 5 && utcMinute === 30) {
+      
+      // Bi-Weekly Geopolitical Insights (Sun & Wed 10:00 AM UTC+3 -> 7:00 AM UTC)
+      if ((utcDay === 0 || utcDay === 3) && utcHour === 7 && utcMinute === 0) {
         generateGeopoliticalOSINTAnalysis(geminiKeyInput).then(text => {
           if (text) {
             setGeoText(text);
@@ -99,6 +101,7 @@ function App() {
           }
         }).catch(err => console.error("Auto-run Geo failed", err));
       }
+      
       // Weekly Sunday Morning Insights
       if (utcDay === 0 && utcHour === 6 && utcMinute === 0) {
         generateWeeklyGoldAnalysis(geminiKeyInput).then(text => {
