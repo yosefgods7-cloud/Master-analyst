@@ -5,12 +5,16 @@ import {defineConfig, loadEnv} from 'vite';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
+  const isGitHubPages = process.env.GITHUB_ACTIONS && process.env.GITHUB_REPOSITORY;
+  const repoName = isGitHubPages ? `/${process.env.GITHUB_REPOSITORY?.split('/')[1]}/` : './';
+
   return {
-    base: './',
+    base: repoName,
     plugins: [react(), tailwindcss()],
     define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.TELEGRAM_BOT_TOKEN': JSON.stringify(env.TELEGRAM_BOT_TOKEN),
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || ''),
+      'process.env.TELEGRAM_BOT_TOKEN': JSON.stringify(env.TELEGRAM_BOT_TOKEN || ''),
+      'process.env': {}
     },
     resolve: {
       alias: {

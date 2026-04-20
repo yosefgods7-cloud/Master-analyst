@@ -37,10 +37,17 @@ function App() {
   
   const [autoRunEnabled, setAutoRunEnabled] = useState(false);
 
-  const [chatIdInput, setChatIdInput] = useState(() => localStorage.getItem("TELEGRAM_CHAT_ID") || "");
+  const getStorageItem = (key: string) => {
+    try {
+      return localStorage.getItem(key) || "";
+    } catch {
+      return "";
+    }
+  };
 
-  const [botTokenInput, setBotTokenInput] = useState(() => localStorage.getItem("TELEGRAM_BOT_TOKEN_OVERRIDE") || "");
-  const [geminiKeyInput, setGeminiKeyInput] = useState(() => localStorage.getItem("GEMINI_API_KEY_OVERRIDE") || "");
+  const [chatIdInput, setChatIdInput] = useState(() => getStorageItem("TELEGRAM_CHAT_ID"));
+  const [botTokenInput, setBotTokenInput] = useState(() => getStorageItem("TELEGRAM_BOT_TOKEN_OVERRIDE"));
+  const [geminiKeyInput, setGeminiKeyInput] = useState(() => getStorageItem("GEMINI_API_KEY_OVERRIDE"));
 
   // Update real-time clock
   useEffect(() => {
@@ -230,7 +237,7 @@ function App() {
               value={chatIdInput}
               onChange={(e) => {
                 setChatIdInput(e.target.value);
-                localStorage.setItem("TELEGRAM_CHAT_ID", e.target.value);
+                try { localStorage.setItem("TELEGRAM_CHAT_ID", e.target.value); } catch {}
               }}
               placeholder="-100... (optional)"
               className="rounded border border-[#27272A] bg-[#111] p-2 text-xs font-mono text-white focus:outline-none focus:border-[#EAB308]"
@@ -243,7 +250,7 @@ function App() {
               value={botTokenInput}
               onChange={(e) => {
                 setBotTokenInput(e.target.value);
-                localStorage.setItem("TELEGRAM_BOT_TOKEN_OVERRIDE", e.target.value);
+                try { localStorage.setItem("TELEGRAM_BOT_TOKEN_OVERRIDE", e.target.value); } catch {}
               }}
               placeholder="1234:ABC... (for static hosting)"
               className="rounded border border-[#27272A] bg-[#111] p-2 text-xs font-mono text-white focus:outline-none focus:border-[#EAB308]"
@@ -256,7 +263,7 @@ function App() {
               value={geminiKeyInput}
               onChange={(e) => {
                 setGeminiKeyInput(e.target.value);
-                localStorage.setItem("GEMINI_API_KEY_OVERRIDE", e.target.value);
+                try { localStorage.setItem("GEMINI_API_KEY_OVERRIDE", e.target.value); } catch {}
               }}
               placeholder="AIzaSy... (for static hosting)"
               className="rounded border border-[#27272A] bg-[#111] p-2 text-xs font-mono text-white focus:outline-none focus:border-[#EAB308]"
