@@ -18,6 +18,7 @@ export function getAI(overrideKey?: string): GoogleGenAI {
 const COMMON_CONFIG = {
   model: "gemini-3.1-pro-preview",
   tools: [{ googleSearch: {} }],
+  toolConfig: { includeServerSideToolInvocations: true }
 };
 
 async function executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 3, baseDelay = 1000): Promise<T> {
@@ -39,7 +40,10 @@ async function executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 3, 
 }
 
 export async function generate7AMBriefing(apiKeyOverride?: string) {
+  const todaysDate = new Date().toUTCString();
   const prompt = `
+  CURRENT DATE AND TIME: ${todaysDate}
+
   You are an expert financial market analyst. Provide a small, concise briefing on the market update and status for Gold (XAUUSD) and the US Dollar Index (DXY).
   Focus ONLY on what happened within the LAST 24 HOURS.
   Requirements:
@@ -57,7 +61,10 @@ export async function generate7AMBriefing(apiKeyOverride?: string) {
 }
 
 export async function generate730AMCalendar(apiKeyOverride?: string) {
+  const todaysDate = new Date().toUTCString();
   const prompt = `
+  CURRENT DATE AND TIME: ${todaysDate}
+
   You are an expert financial market analyst. Compile the latest daily economic calendar specifically covering DXY, EURUSD, GBPUSD, and USDJPY.
   You MUST source today's high-impact and medium-impact news list as they would appear on Forex Factory.
   Requirements:
@@ -75,7 +82,10 @@ export async function generate730AMCalendar(apiKeyOverride?: string) {
 }
 
 export async function generate8AMDeepOverview(apiKeyOverride?: string) {
+  const todaysDate = new Date().toUTCString();
   const prompt = `
+  CURRENT DATE AND TIME: ${todaysDate}
+
   You are an expert financial market analyst. Provide a VERY DEEP OVERVIEW of the latest market updates covering major articles, news, and updates.
   You MUST provide a deep sentiment and fundamental view on what can affect Gold (XAUUSD) today.
   Cover macroeconomic factors heavily: wars, geopolitical tension, rate cuts, NFP, CPI, or other major US news releases.
@@ -101,7 +111,10 @@ export async function generate8AMDeepOverview(apiKeyOverride?: string) {
 }
 
 export async function generateWeeklyGoldAnalysis(apiKeyOverride?: string) {
+  const todaysDate = new Date().toUTCString();
   const prompt = `
+  CURRENT DATE AND TIME: ${todaysDate}
+
   You are an expert financial market analyst. Provide a VERY DEEP WEEKLY INSIGHT on what happened within the past week in the Gold (XAUUSD) market.
   
   Requirements:
@@ -120,7 +133,10 @@ export async function generateWeeklyGoldAnalysis(apiKeyOverride?: string) {
 }
 
 export async function generateWeeklyDXYAnalysis(apiKeyOverride?: string) {
+  const todaysDate = new Date().toUTCString();
   const prompt = `
+  CURRENT DATE AND TIME: ${todaysDate}
+
   You are an expert financial market analyst. Provide a VERY DEEP WEEKLY INSIGHT on what happened within the past week in the US Dollar Index (DXY) market.
   
   Requirements:
@@ -139,7 +155,10 @@ export async function generateWeeklyDXYAnalysis(apiKeyOverride?: string) {
 }
 
 export async function generateGeopoliticalOSINTAnalysis(apiKeyOverride?: string) {
+  const todaysDate = new Date().toUTCString();
   const prompt = `
+  CURRENT DATE AND TIME: ${todaysDate}
+
   DAILY GEOPOLITICAL SMART-MONEY POSITIONING BRIEFING
 
   You are an elite macro + OSINT trading analyst. Every day I send this prompt you must run a complete fresh deep dive using all your real-time tools.
