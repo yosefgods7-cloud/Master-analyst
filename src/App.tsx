@@ -133,9 +133,9 @@ function App() {
     try {
       const text = await generate7AMBriefing(geminiKeyInput);
       setBriefingText(text || "");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to generate briefing.");
+      alert("Briefing Error: " + (err.message || String(err)));
     } finally {
       setBriefingLoading(false);
     }
@@ -146,9 +146,9 @@ function App() {
     try {
       const text = await generate730AMCalendar(geminiKeyInput);
       setCalendarText(text || "");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to generate calendar.");
+      alert("Calendar Error: " + (err.message || String(err)));
     } finally {
       setCalendarLoading(false);
     }
@@ -159,9 +159,9 @@ function App() {
     try {
       const text = await generate8AMDeepOverview(geminiKeyInput);
       setOverviewText(text || "");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to generate overview.");
+      alert("Overview Error: " + (err.message || String(err)));
     } finally {
       setOverviewLoading(false);
     }
@@ -172,9 +172,9 @@ function App() {
     try {
       const text = await generateWeeklyGoldAnalysis(geminiKeyInput);
       setWeeklyGoldText(text || "");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to generate weekly gold.");
+      alert("Weekly Gold Error: " + (err.message || String(err)));
     } finally {
       setWeeklyGoldLoading(false);
     }
@@ -185,9 +185,9 @@ function App() {
     try {
       const text = await generateWeeklyDXYAnalysis(geminiKeyInput);
       setWeeklyDXYText(text || "");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to generate weekly DXY.");
+      alert("Weekly DXY Error: " + (err.message || String(err)));
     } finally {
       setWeeklyDXYLoading(false);
     }
@@ -198,9 +198,9 @@ function App() {
     try {
       const text = await generateGeopoliticalOSINTAnalysis(geminiKeyInput);
       setGeoText(text || "");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to generate geopolitical analysis.");
+      alert("Geo Error: " + (err.message || String(err)));
     } finally {
       setGeoLoading(false);
     }

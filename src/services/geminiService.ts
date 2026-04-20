@@ -18,7 +18,6 @@ export function getAI(overrideKey?: string): GoogleGenAI {
 const COMMON_CONFIG = {
   model: "gemini-3.1-pro-preview",
   tools: [{ googleSearch: {} }],
-  toolConfig: { includeServerSideToolInvocations: true }
 };
 
 async function executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 3, baseDelay = 1000): Promise<T> {
