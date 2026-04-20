@@ -20,22 +20,44 @@ const COMMON_CONFIG = {
   tools: [{ googleSearch: {} }],
 };
 
-async function executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 3, baseDelay = 1000): Promise<T> {
-  let attempt = 0;
-  while (attempt < maxRetries) {
-    try {
-      return await operation();
-    } catch (error: any) {
-      attempt++;
-      if (attempt >= maxRetries) {
-        throw error;
+// Global Execution Queue to prevent Free Tier Rate Limit (15 RPM)
+// Ensures absolutely no parallel Gemini bursts and guarantees a cool-down.
+let apiQueueLock = Promise.resolve();
+
+async function executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 4, baseDelay = 5000): Promise<T> {
+  const execWithBackoff = async () => {
+    let attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        return await operation();
+      } catch (error: any) {
+        attempt++;
+        if (attempt >= maxRetries) {
+          throw error;
+        }
+        
+        // If it's a 429 Too Many Requests or 503 Overloaded, we aggressively back off
+        const errorMsg = error?.message?.toLowerCase() || "";
+        const isRateLimit = errorMsg.includes("429") || errorMsg.includes("quota") || errorMsg.includes("too many");
+        
+        const waitTime = isRateLimit ? 30000 : baseDelay * attempt;
+        
+        console.warn(`Gemini API trigger failed. Retrying in ${waitTime}ms... (Attempt ${attempt} of ${maxRetries})`, error?.message);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
       }
-      const waitTime = baseDelay * Math.pow(2, attempt - 1);
-      console.warn(`Gemini API call failed. Retrying in ${waitTime}ms... (Attempt ${attempt} of ${maxRetries})`, error?.message);
-      await new Promise(resolve => setTimeout(resolve, waitTime));
     }
-  }
-  throw new Error("Execute with retry failed");
+    throw new Error("Execute with retry failed");
+  };
+
+  // We chain the new request dynamically to run ONLY after the previous ones have entirely finished
+  const currentCall = apiQueueLock.then(execWithBackoff);
+
+  // Reassign the queue lock to be this request + an absolute 8-second global cool-down before the next one starts inside the queue (Max: 7.5 RPM automatically)
+  apiQueueLock = currentCall
+    .catch(() => {}) // We catch errors here purely so a failed request doesn't break the global queue chain line for the next tool operation
+    .then(() => new Promise(res => setTimeout(res, 8000)));
+
+  return currentCall;
 }
 
 export async function generate7AMBriefing(apiKeyOverride?: string) {

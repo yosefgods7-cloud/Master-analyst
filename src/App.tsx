@@ -109,7 +109,7 @@ function App() {
         }).catch(err => console.error("Auto-run Geo failed", err));
       }
       
-      // Weekly Sunday Morning Insights
+      // Weekly Sunday Morning Insights - Gold at 6:00 AM UTC
       if (utcDay === 0 && utcHour === 6 && utcMinute === 0) {
         generateWeeklyGoldAnalysis(geminiKeyInput).then(text => {
           if (text) {
@@ -117,7 +117,10 @@ function App() {
             return sendToTelegram(text, chatIdInput, botTokenInput);
           }
         }).catch(err => console.error("Auto-run Weekly Gold failed", err));
-        
+      }
+
+      // Weekly Sunday Morning Insights - DXY at 6:05 AM UTC (staggered)
+      if (utcDay === 0 && utcHour === 6 && utcMinute === 5) {
         generateWeeklyDXYAnalysis(geminiKeyInput).then(text => {
           if (text) {
             setWeeklyDXYText(text);
